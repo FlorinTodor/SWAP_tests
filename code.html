@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de SWAP Florin Emanuel Todor Gliga GIIADE</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        #quiz-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 2em;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        .welcome-screen, .quiz-screen, .results-screen, #block-end-screen {
+            display: none; /* Hidden by default */
+            padding: 20px;
+        }
+
+        .welcome-screen.active, .quiz-screen.active, .results-screen.active, #block-end-screen.active {
+            display: block; /* Shown when active */
+        }
+
+        #question-area {
+            margin-bottom: 20px;
+            text-align: left;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #fdfdfd;
+        }
+
+        #question-number-label {
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        #question-label {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap; /* Para que los botones se ajusten en pantallas pequeñas */
+        }
+
+        button, .option-button {
+            padding: 12px 20px; /* Ajustado para 4 opciones */
+            font-size: 1em; /* Ajustado para 4 opciones */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            min-width: 150px; /* Ancho mínimo para botones de opción */
+        }
+
+        button:hover:not(:disabled), .option-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button:disabled, .option-button:disabled {
+            background-color: #cccccc !important; /* Asegurar que el color de deshabilitado se aplique */
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        #start-button, #next-block-button {
+            background-color: #3498db;
+            color: white;
+        }
+
+        #start-button:hover:not(:disabled), #next-block-button:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+
+        .multiple-choice-buttons .option-button {
+            background-color: #5dade2; /* Un color azul claro para opciones */
+            color: white;
+            flex-basis: 48%; /* Dos botones por fila en pantallas más grandes */
+            margin-bottom: 10px;
+        }
+        .multiple-choice-buttons .option-button:hover:not(:disabled) {
+            background-color: #4b9cd3;
+        }
+
+        .option-button.correct-option {
+            background-color: #2ecc71 !important; /* Verde para la opción correcta */
+            border: 2px solid #27ae60;
+        }
+        .option-button.incorrect-user-choice {
+            background-color: #e74c3c !important; /* Rojo para la opción incorrecta elegida por el usuario */
+            border: 2px solid #c0392b;
+        }
+
+
+        #next-button {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        #next-button:hover:not(:disabled) {
+            background-color: #e67e22;
+        }
+
+        #reset-button, #reset-button-welcome, #reset-button-results, #reset-button-block-end {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        #reset-button:hover:not(:disabled), 
+        #reset-button-welcome:hover:not(:disabled),
+        #reset-button-results:hover:not(:disabled),
+        #reset-button-block-end:hover:not(:disabled) {
+            background-color: #7f8c8d;
+        }
+
+        #feedback-message {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            min-height: 20px; /* Ensure space even if empty */
+        }
+
+        .correct-feedback { /* Renombrado para evitar conflicto con clase de botón */
+            color: #27ae60;
+            background-color: #e6ffe6;
+            border: 1px solid #27ae60;
+        }
+
+        .incorrect-feedback { /* Renombrado para evitar conflicto con clase de botón */
+            color: #c0392b;
+            background-color: #ffe6e6;
+            border: 1px solid #c0392b;
+        }
+
+        #score-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 1.1em;
+            color: #444;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            gap: 10px;
+        }
+
+        #score-area > div {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        #remaining-count-label {
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .final-results {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #eaf4fa;
+            border-radius: 10px;
+            border: 1px solid #3498db;
+        }
+
+        .final-results p {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .hidden-initially {
+            display: none;
+        }
+
+
+        @media (max-width: 700px) { /* Ajustado el breakpoint */
+            .multiple-choice-buttons .option-button {
+                flex-basis: 100%; /* Un botón por fila */
+            }
+        }
+        @media (max-width: 600px) {
+            .button-group:not(.multiple-choice-buttons) { /* Aplicar solo a los botones de navegación */
+                flex-direction: column;
+            }
+             .button-group:not(.multiple-choice-buttons) button {
+                width: 100%;
+            }
+            #quiz-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="quiz-container">
+        <h1>Test de SWAP</h1> 
+        <h2>Florin Emanuel Todor Gliga GIIADE</h2>
+
+        <div id="welcome-screen" class="welcome-screen active">
+            <p>¡Bienvenido al Test de Servidores Web!</p>
+            <p>Este test consta de preguntas de opción múltiple. Cada pregunta tiene 4 opciones, solo una es correcta. Las preguntas se presentan en bloques de 30. Si fallas una pregunta, esta volverá a la cola para poder salir en futuros bloques.</p>
+            <p>Total de preguntas en el banco: <span id="total-questions-count"></span></p>
+            <button id="start-button">Empezar Test</button>
+            <button id="reset-button-welcome" class="hidden-initially">Reiniciar Test</button>
+        </div>
+
+        <div id="quiz-screen" class="quiz-screen">
+            <div id="question-area">
+                <span id="question-number-label"></span>
+                <p id="question-label"></p>
+            </div>
+
+            <div class="button-group multiple-choice-buttons">
+                <button class="option-button" data-index="0"></button>
+                <button class="option-button" data-index="1"></button>
+                <button class="option-button" data-index="2"></button>
+                <button class="option-button" data-index="3"></button>
+            </div>
+
+            <p id="feedback-message"></p>
+
+            <div class="button-group">
+                <button id="next-button" disabled>Siguiente Pregunta</button>
+                <button id="reset-button">Reiniciar Test</button>
+            </div>
+
+            <div id="score-area">
+                <div>Aciertos: <span id="correct-answers-count">0</span></div>
+                <div>Fallos: <span id="incorrect-answers-count">0</span></div>
+                <div><span id="remaining-count-label">Preguntas restantes por responder: 0</span></div>
+            </div>
+        </div>
+
+        <div id="results-screen" class="results-screen">
+            <div class="final-results">
+                <h2>Test Finalizado</h2>
+                <p>¡Has respondido a todas las preguntas disponibles!</p>
+                <p>Aciertos totales: <span id="final-correct-answers">0</span></p>
+                <p>Fallos totales: <span id="final-incorrect-answers">0</span></p>
+            </div>
+            <button id="reset-button-results">Reiniciar Test</button>
+        </div>
+
+        <div id="block-end-screen" class="results-screen"> <!-- Usa la misma clase para estilo similar -->
+            <div class="final-results">
+                <h2>Bloque de preguntas finalizado</h2>
+                <p>Aciertos en este bloque: <span id="block-correct-answers">0</span></p>
+                <p>Fallos en este bloque: <span id="block-incorrect-answers">0</span></p>
+                <p>Aciertos totales: <span id="total-correct-on-block-end">0</span></p>
+                <p>Fallos totales: <span id="total-incorrect-on-block-end">0</span></p>
+                <p>Preguntas restantes en la cola: <span id="remaining-on-block-end">0</span></p>
+            </div>
+            <button id="next-block-button">Siguiente Bloque</button>
+            <button id="reset-button-block-end">Reiniciar Test</button>
+        </div>
+
+    </div>
+
+    <script>
+        const allQuizQuestionsData = [
+            // TEMAS 1, 2, 3
+             // TEMA 1: INTRODUCCIÓN
+    {"id": 1, "theme": "Tema 1: Introducción", "question": "¿Cuál de las siguientes NO es una ventaja del Cloud Computing según el temario?", "options": ["Mayor consumo energético inicial para la migración", "Escalabilidad flexible", "Menor costo de infraestructura propia", "Acceso bajo demanda a recursos"], "answer": 0}, // El temario (slide 19) lista "Energía" bajo "Reducción de costes", implicando que a la larga es una ventaja. La pregunta busca lo que NO es ventaja. "Mayor consumo energético" es la opción que no encaja como ventaja directa.
+    {"id": 2, "theme": "Tema 1: Introducción", "question": "¿Cuál es un problema común al montar un sitio web mal planificado, según se discute en la introducción del temario?", "options": ["Exceso de ganancias inesperadas", "Falta de interés de los usuarios", "Tráfico web consistentemente bajo", "Problemas de disponibilidad y capacidad para manejar la carga"], "answer": 3}, // Diapositivas 24-33 del Tema 1.
+    {"id": 3, "theme": "Tema 1: Introducción", "question": "¿Cuál es una característica clave de los servidores Blade mencionada en la evolución histórica de los servidores?", "options": ["Solo funcionan con sistemas operativos Linux.", "Permiten alojar una mayor densidad de servidores en menos espacio físico (por rack).", "No son adecuados para su uso en Centros de Procesamiento de Datos.", "Consumen significativamente más energía que los servidores en rack tradicionales."], "answer": 1}, // Diapositiva 5 del Tema 1.
+    {"id": 4, "theme": "Tema 1: Introducción", "question": "¿Qué es un Centro de Procesamiento de Datos (CPD) según la definición del temario?", "options": ["Un software avanzado para la administración remota de servidores.", "Una técnica de optimización para bases de datos distribuidas.", "Una ubicación física donde se concentran los recursos tecnológicos para el procesamiento de información de una organización.", "Un tipo de aplicación web diseñada para el análisis de grandes volúmenes de datos."], "answer": 2}, // Diapositiva 6 del Tema 1.
+    {"id": 5, "theme": "Tema 1: Introducción", "question": "¿Qué es un 'cold spare server' en el contexto de la disponibilidad de un sitio web?", "options": ["Un servidor dedicado exclusivamente a tareas de refrigeración del CPD.", "Un servidor utilizado para almacenar repuestos de hardware.", "Un servidor replicado que se mantiene apagado o en espera para sustituir al servidor principal en caso de fallo de este.", "Un servidor destinado únicamente a realizar pruebas de software antes del despliegue."], "answer": 2}, // Diapositivas 29-30 del Tema 1.
+    {"id": 6, "theme": "Tema 1: Introducción", "question": "¿Qué problema principal puede surgir en los CPD debido a un gran número de servidores, según el temario?", "options": ["Una latencia de red significativamente mayor entre los servidores internos.", "Una disminución drástica en la seguridad física de las instalaciones.", "Un mayor consumo de energía eléctrica y la necesidad de sistemas de refrigeración más potentes.", "Una reducción en la flexibilidad para instalar nuevo software en los servidores."], "answer": 2}, // Diapositivas 4 y 8 del Tema 1.
+    {"id": 7, "theme": "Tema 1: Introducción", "question": "¿Qué significa el término 'Green IT' o 'Tecnologías Verdes' en el contexto de los CPD?", "options": ["Un nuevo estándar de color para el cableado de red en los CPD.", "Una técnica para acelerar la velocidad de carga de los sitios web mediante compresión.", "El uso de tecnologías y prácticas que buscan reducir el consumo de energía y la emisión de carbono.", "Un software especializado en la optimización automática del tamaño de las imágenes web."], "answer": 2}, // Diapositiva 8 del Tema 1.
+    {"id": 8, "theme": "Tema 1: Introducción", "question": "¿Qué ventaja principal aporta la virtualización en el entorno de servidores?", "options": ["Aumenta el consumo energético global del CPD al añadir una capa de software.", "Reduce la capacidad total de procesamiento disponible en el hardware físico.", "Provoca que los servidores virtualizados operen a una velocidad inferior que los físicos.", "Permite compartir un mismo hardware físico entre varias máquinas virtuales, optimizando recursos."], "answer": 3}, // Diapositiva 12 del Tema 1.
+    {"id": 9, "theme": "Tema 1: Introducción", "question": "El modelo Cloud Computing se caracteriza por proporcionar servicios de forma:", "options": ["Estática y raramente actualizable", "Flexible y adaptativa a las necesidades del negocio", "Limitada a un pequeño conjunto de aplicaciones predefinidas", "Únicamente para el desarrollo de software, no para producción"], "answer": 1}, // Corregido. La pregunta original era V/F. El temario (slide 17) indica "forma flexible y adaptativa".
+    {"id": 10, "theme": "Tema 1: Introducción", "question": "La arquitectura más adecuada y comúnmente referenciada para montar una granja web escalable es:", "options": ["Arquitectura de n capas (o multi-capa)", "Sistema aislado en un único servidor potente", "Arquitectura Cliente-Servidor simple (dos capas)", "Arquitectura Cliente-Cola-Cliente exclusivamente"], "answer": 0}, // Diapositivas 20-21 y 35-39 del Tema 1 sugieren esto.
+    {"id": 11, "theme": "Tema 1: Introducción", "question": "Los tres modelos de servicio básicos y más reconocidos del Cloud Computing son:", "options": ["SaaS (Software como Servicio), FaaS (Función como Servicio), DaaS (Datos como Servicio)", "FaaS (Función como Servicio), PaaS (Plataforma como Servicio), IaaS (Infraestructura como Servicio)", "SaaS (Software como Servicio), PaaS (Plataforma como Servicio), IaaS (Infraestructura como Servicio)", "SaaS (Software como Servicio), CaaS (Contenedor como Servicio), FaaS (Función como Servicio)"], "answer": 2}, // Diapositivas 11 y 18 del Tema 1.
+    {"id": 12, "theme": "Tema 1: Introducción", "question": "Si el hardware y el software de un sistema comienzan a fallar impidiendo su correcto funcionamiento, esto representa principalmente un problema de:", "options": ["Escalabilidad del sistema", "Viabilidad económica del proyecto", "Disponibilidad del servicio", "Carga excesiva generada por los usuarios"], "answer": 2}, // Diapositivas 26-31 del Tema 1.
+    {"id": 13, "theme": "Tema 1: Introducción", "question": "Afirmación: 'Una granja web es un conjunto de servidores dedicados a servir contenido web a usuarios finales'. ¿Es esta afirmación verdadera o falsa?", "options": ["Verdadero", "Falso", "Depende del tipo de contenido web", "Solo si son servidores virtualizados"], "answer": 0}, // La afirmación es Verdadera.
+        
+        // TEMA 2: DISPONIBILIDAD Y ESCALABILIDAD
+    {"id": 14, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Cómo podemos calcular la disponibilidad (As) de un sistema en serie con 'n' componentes, donde Ac1, Ac2... Acn son las disponibilidades de cada componente?", "options": ["As = Ac1 + Ac2 + Ac3 + ... + Acn", "As = Acn + (Ac1 * Ac2 * Ac3 * ... * Acn-1)", "As = Ac1 / (Ac1 + Ac2 + Ac3 + ... + Acn)", "As = Ac1 * Ac2 * Ac3 * ... * Acn"], "answer": 3}, // Diapositiva 15 del Tema 2.
+    {"id": 15, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Cómo podemos medir la disponibilidad de un sistema en base a un porcentaje, según la fórmula presentada?", "options": ["(Número de peticiones exitosas / Número total de peticiones) * 100", "100 - (Tiempo activo / Periodo de tiempo) * 100", "100 - (Tiempo caído / Periodo de tiempo) * 100", "(Tiempo caído * Periodo de tiempo) / 100"], "answer": 2}, // Diapositiva 11 del Tema 2.
+    {"id": 16, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "Considerando el gráfico de impacto en escalabilidad, ¿cuál de estas optimizaciones suele tener un menor impacto inicial en la escalabilidad global del sistema?", "options": ["Optimización del diseño del sistema", "Optimización del hardware", "Optimización del código de la aplicación", "Optimización del producto (funcionalidades)"], "answer": 2}, // Diapositiva 32 del Tema 2. (El gráfico muestra "Optimización del código" en la parte más interna, implicando menor impacto inicial o más granular).
+    {"id": 17, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Cuál de las siguientes opciones describe mejor la función principal de un balanceador de carga en una granja web?", "options": ["Un componente de hardware que acelera la CPU de los servidores.", "Un protocolo de seguridad avanzado para proteger la web contra intrusiones.", "Un sistema de almacenamiento de datos centralizado para todos los servidores.", "Un dispositivo o software que distribuye el tráfico de red entrante entre varios servidores."], "answer": 3}, // Diapositiva 4 del Tema 2.
+    {"id": 18, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Cuál es el principal objetivo de la alta disponibilidad en sistemas web?", "options": ["Aumentar el número máximo de servidores que se pueden añadir al sistema.", "Minimizar el tiempo durante el cual el sistema o servicio no está operativo para los usuarios.", "Reducir el número de usuarios concurrentes para mejorar el rendimiento.", "Realizar copias de seguridad de los datos cada hora de forma automática."], "answer": 1}, // Diapositivas 3, 6, 10 del Tema 2.
+    {"id": 19, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Cuál es un ejemplo de escalado horizontal?", "options": ["Reducir el número de usuarios simultáneos permitidos en el sistema.", "Agregar más servidores al sistema para distribuir la carga.", "Aumentar la cantidad de memoria RAM de un servidor existente.", "Actualizar el sistema operativo de los servidores a una versión más reciente."], "answer": 1}, // Diapositiva 34 y 36 del Tema 2.
+    {"id": 20, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Cuál es un ejemplo de escalado vertical?", "options": ["Añadir más servidores de aplicaciones a la red.", "Reducir el tiempo de respuesta de una aplicación mediante la optimización del código.", "Aumentar la capacidad de RAM o la potencia de la CPU de un servidor existente.", "Configurar más balanceadores de carga para distribuir el tráfico."], "answer": 2}, // Diapositiva 34 y 35 del Tema 2.
+    {"id": 21, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Cuál es una ventaja del uso de balanceadores de carga mencionada en el temario?", "options": ["Mejora la seguridad exclusivamente contra ataques DDoS.", "Aumenta directamente la velocidad de procesamiento del almacenamiento.", "Reduce el consumo de energía de los servidores individuales.", "Distribuye el tráfico entre múltiples servidores, mejorando la disponibilidad y escalabilidad."], "answer": 3}, // Diapositiva 4 del Tema 2 (implícito) y Tema 4 (Balanceo de Carga) en general.
+    {"id": 22, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Para qué se usa la 'escala punto nueve' (ej. 99.9%, 99.99%)?", "options": ["Para definir la capacidad de escalabilidad de un sistema.", "Para medir la potencia de procesamiento de un servidor.", "Para definir y cuantificar la disponibilidad de un sistema o servicio.", "Para calcular la velocidad de transferencia de los procesadores de última generación."], "answer": 2}, // Diapositiva 11 del Tema 2.
+    {"id": 23, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Qué es la disponibilidad en un sistema web?", "options": ["El tiempo necesario para actualizar una aplicación sin interrumpir el servicio.", "El número máximo de usuarios que pueden estar conectados simultáneamente.", "La cantidad total de servidores utilizados en la infraestructura de un sitio web.", "El tiempo o porcentaje de tiempo que un sistema está en línea y operativo, cumpliendo su función."], "answer": 3}, // Diapositiva 6 y 11 del Tema 2.
+    {"id": 24, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Qué es la escalabilidad en un sistema web?", "options": ["La reducción del consumo energético en los centros de datos mediante tecnologías verdes.", "La capacidad de un sistema de adaptarse y manejar una mayor demanda o carga de trabajo.", "El tiempo total que un sistema permanece en línea sin interrupciones no programadas.", "El uso exclusivo de servidores físicos en lugar de máquinas virtuales para mayor rendimiento."], "answer": 1}, // Diapositivas 3, 31, 32 del Tema 2.
+    {"id": 25, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Qué significa 'redundancia' en un sistema de alta disponibilidad?", "options": ["Hacer copias de seguridad de los datos importantes en discos duros externos.", "Reducir la cantidad de servidores en uso para minimizar puntos de fallo.", "Mejorar la velocidad de los procesadores para procesar las peticiones más rápido.", "Duplicar componentes críticos (hardware o software) para que uno pueda tomar el relevo si otro falla."], "answer": 3}, // Diapositiva 22 del Tema 2.
+    {"id": 26, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Qué significa el término 'downtime' en el contexto de la alta disponibilidad?", "options": ["El número total de servidores que componen un Centro de Procesamiento de Datos.", "La capacidad de un sistema para aceptar un número creciente de usuarios sin degradación del servicio.", "El período durante el cual un sistema o servicio está fuera de servicio o no disponible para los usuarios.", "El tiempo que tarda un servidor en responder a una petición de un usuario."], "answer": 2}, // Diapositiva 10 del Tema 2.
+    {"id": 27, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "¿Qué significa que un sitio web alcance un 100% de disponibilidad?", "options": ["Que sufre tanto caídas programadas como no programadas, pero se recupera rápidamente.", "Que no sufre caídas programadas para mantenimiento.", "Que no sufre caídas no programadas (fallos inesperados).", "Que sufre caídas no programadas, pero nunca durante horas pico."], "answer": 2}, // Diapositiva 12 del Tema 2.
+    {"id": 28, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "La disponibilidad de un sistema con un componente principal (Ac1) y un componente de réplica (Ac2) que entra en funcionamiento si el primero falla, se calcula como:", "options": ["Ac2 + ((1 - Ac1) * Ac2)", "A_NuevoC = Ac1 + ((1 - Ac1) * Ac2)", "Acn-1 + ((1 - Acn-2) * Acn)", "Acn + ((1 - Acn-1) * Acn-1)"], "answer": 1}, // La fórmula de la diapositiva 17 del Tema 2 es A_NuevoC = Ac1 + ( (1 – Ac1) * Ac2 ). La opción 'b' es la que más se asemeja.
+    {"id": 29, "theme": "Tema 2: Disponibilidad y Escalabilidad", "question": "La disponibilidad también se puede calcular como:", "options": ["Uptime / (Uptime + Downtime)", "Downtime / (Uptime + Downtime) * 100", "Downtime / (Uptime + Downtime)", "(Uptime + Downtime) / Uptime"], "answer": 0}, // 
+    
+    
+    
+    // TEMA 3: LA RED DE UNA GRANJA WEB
+    {"id": 30, "theme": "Tema 3: La red de una granja web", "question": "¿Cómo se mejora la seguridad principalmente en una configuración de DMZ doble?", "options": ["Reduciendo el número de servidores en la subred frontal para minimizar la exposición.", "Eliminando la subred trasera para simplificar la arquitectura de cortafuegos.", "Conectando directamente los servidores de la DMZ a Internet sin filtrado intermedio.", "Aislando los servidores internos (back-rail) de la red corporativa y de Internet con múltiples cortafuegos dedicados."], "answer": 3}, // Diapositivas 27-29 del Tema 3. La DMZ doble usa dos niveles de cortafuegos para aislar progresivamente.
+    {"id": 31, "theme": "Tema 3: La red de una granja web", "question": "¿Cómo se puede garantizar una conexión segura entre una granja web y una red corporativa interna?", "options": ["Deshabilitando completamente el tráfico entrante desde la red corporativa hacia la granja web.", "Eliminando cualquier mecanismo de filtrado de paquetes para mejorar la velocidad.", "Utilizando cortafuegos para controlar el tráfico y, si es necesario, protocolos seguros como SSL/TLS para la comunicación.", "Conectando todos los servidores de la granja web y de la red corporativa a una misma subred sin segmentación."], "answer": 2}, // Diapositivas 16, 22, 25, 28, 60-61 del Tema 3.
+    {"id": 32, "theme": "Tema 3: La red de una granja web", "question": "¿Con qué elementos de red se podría formar un \"Backbone\" (eje principal de la red del sistema)?", "options": ["Primariamente con un hub, un switch o un router.", "Únicamente con un switch y cables de red CAT 6.", "Exclusivamente con un router y cables de fibra óptica.", "Solo con un hub y cables de red CAT 6."], "answer": 0}, // Diapositiva 9 del Tema 3.
+    {"id": 33, "theme": "Tema 3: La red de una granja web", "question": "¿Cuál es el propósito principal de la configuración de una red segura (por ejemplo, con una DMZ) en una granja web?", "options": ["Aislar subredes, controlar el tráfico entre ellas y definir puntos de entrada controlados para mejorar la seguridad.", "Aumentar el número máximo de servidores que se pueden conectar a la red.", "Reducir la velocidad de transferencia de datos para facilitar la inspección de paquetes.", "Evitar completamente el acceso a Internet para todos los servidores de la granja."], "answer": 0}, // Diapositivas 6, 14, 15 del Tema 3.
+    {"id": 34, "theme": "Tema 3: La red de una granja web", "question": "¿Cuál es la diferencia clave entre servidores Single-NIC y Multi-NIC en el contexto de una DMZ con front-rail y back-rail?", "options": ["Los servidores Single-NIC pueden acceder a Internet y a la red interna simultáneamente, mientras que los Multi-NIC no.", "No hay diferencia funcional, solo en la velocidad de las conexiones de red que soportan.", "Los servidores Multi-NIC pueden conectarse a múltiples subredes (ej. front-rail y back-rail), mientras que los Single-NIC típicamente se conectan a una sola.", "Los servidores Single-NIC siempre ofrecen una mayor velocidad de conexión que los Multi-NIC debido a la menor complejidad."], "answer": 2}, // Diapositiva 31 y 32 del Tema 3.
+    {"id": 35, "theme": "Tema 3: La red de una granja web", "question": "¿Cuál es la principal desventaja de una configuración de red sin DMZ (donde servidores y máquinas de escritorio comparten la misma subred)?", "options": ["Mayor complejidad en la administración de la red debido a la necesidad de múltiples switches.", "Menor seguridad, ya que los recursos se comparten y un compromiso en un servidor puede afectar a otros o a las máquinas de escritorio.", "Reducción significativa en la velocidad de respuesta de los servidores debido a la congestión del hub.", "Mayor costo en hardware de red, ya que se necesitan routers más potentes."], "answer": 1}, // Diapositiva 20 del Tema 3.
+    {"id": 36, "theme": "Tema 3: La red de una granja web", "question": "¿Cuál es la ventaja principal del uso de Listas de Control de Acceso (ACL) en routers?", "options": ["Permiten el acceso directo y sin restricciones a todas las subredes conectadas.", "Eliminan la necesidad de utilizar cortafuegos en la red.", "Regulan el tráfico de red permitiendo o bloqueando paquetes específicos basados en criterios como IP de origen/destino y puertos.", "Mejoran automáticamente la velocidad de transferencia de datos al priorizar ciertos tipos de tráfico."], "answer": 2}, // Diapositivas 53-54 del Tema 3.
+    {"id": 37, "theme": "Tema 3: La red de una granja web", "question": "¿Qué característica distingue a los servidores conectados exclusivamente al back-rail en una granja web con configuración de DMZ doble?", "options": ["No pueden interactuar de ninguna forma con otras subredes o servidores.", "Siempre tienen balanceadores de carga dedicados instalados localmente.", "Son accesibles directamente desde Internet para facilitar la administración remota.", "Solo pueden comunicarse con servidores internos (ej. otros servidores en el back-rail o front-rail a través de rutas controladas) o redes seguras, y no directamente con Internet."], "answer": 3}, // Diapositivas 30, 35, 36 del Tema 3. La respuesta marcada "b" en la captura es incorrecta.
+    {"id": 38, "theme": "Tema 3: La red de una granja web", "question": "En una granja web, ¿qué componente o conjunto de componentes forma el eje principal de la red (backbone) que gestiona las comunicaciones entre servidores y redes?", "options": ["Un único Hub de alta capacidad.", "El conjunto de servidores de aplicaciones.", "Un router de borde conectado directamente a Internet.", "Un switch, hub o router central que interconecta los diferentes segmentos de la granja."], "answer": 3}, // La respuesta marcada "b" (Backbone) en la captura es conceptualmente correcta, pero la pregunta pide el *componente*. La diapositiva 9 indica que el backbone se puede formar con Switch, Router o Hub. Si la pregunta es qué *forma* el backbone, la d es más precisa. Si la pregunta es "cómo se llama el eje principal", entonces "Backbone" sería la respuesta conceptual. Dada las opciones, la más técnica es la (d). He reformulado para claridad.
+    {"id": 39, "theme": "Tema 3: La red de una granja web", "question": "¿Qué concepto o tecnología permite ocultar las direcciones IP reales de los servidores internos en una granja web, mapeando una dirección pública a direcciones privadas?", "options": ["NAT (Network Address Translation)", "ACL (Access Control List)", "DMZ tradicional", "Filtrado de paquetes a nivel de aplicación"], "answer": 0}, // Diapositivas 57-58 del Tema 3.
+    {"id": 40, "theme": "Tema 3: La red de una granja web", "question": "¿Qué factor es clave para definir y asegurar la calidad del servicio (QoS) en la conexión a Internet de una red de una granja web?", "options": ["El número total de servidores web en la granja.", "El número de conexiones simultáneas que los servidores pueden manejar.", "La cantidad y tipo de switches utilizados en la red interna.", "El ancho de banda disponible en la conexión a Internet y su gestión."], "answer": 3}, // Diapositiva 43 del Tema 3.
+    {"id": 41, "theme": "Tema 3: La red de una granja web", "question": "¿Qué función principal cumple una zona desmilitarizada (DMZ) en la arquitectura de red de una granja web?", "options": ["Permitir compartir recursos de forma indiscriminada entre todos los servidores y los clientes de Internet.", "Reducir el tráfico de red mediante la compresión avanzada de los datos transmitidos.", "Aislar los servidores que necesitan ser accesibles desde redes externas (como Internet) de la red interna segura, actuando como una zona de contención.", "Aumentar la velocidad de conexión entre los diferentes servidores de la granja mediante protocolos optimizados."], "answer": 2}, // Diapositivas 14, 15, 16 del Tema 3.
+    {"id": 42, "theme": "Tema 3: La red de una granja web", "question": "Una desventaja o desafío de una configuración de DMZ tradicional (con un solo cortafuegos gestionando múltiples redes) es que:", "options": ["Requiere duplicidad de cortafuegos, lo que incrementa mucho el coste.", "El coste económico del switch central es demasiado elevado.", "Provoca una sobrecarga inevitable de paquetes TCP/IP en el servidor web.", "El único cortafuegos puede convertirse en un cuello de botella o un punto único de fallo crítico."], "answer": 3}, // Diapositiva 26 del Tema 3.
+
+
+    // TEMA 4: BALANCEO DE CARGA
+    {"id": 43, "theme": "Tema 4: Balanceo de carga", "question": "¿Cuál de estos algoritmos de balanceo de carga asigna un peso a cada servidor para controlar el porcentaje de peticiones que recibe?", "options": ["Basado en porcentaje (como concepto genérico)", "Basado en ponderación", "Basado en prioridad", "Round-robin"], "answer": 1}, // Diapositivas 71-73 del Tema 4. El "basado en ponderación" es el que explícitamente usa pesos.
+    {"id": 44, "theme": "Tema 4: Balanceo de carga", "question": "En un entorno distribuido globalmente, ¿por qué puede ser preferible un balanceador de carga basado en latencia (tiempo de respuesta) en lugar de uno por turnos (round-robin)?", "options": ["Porque el basado en latencia consume menos recursos del sistema de balanceo.", "Porque garantiza que el tráfico se dirija al servidor que actualmente responde más rápido, mejorando la experiencia del usuario.", "Porque el basado en latencia requiere menos mantenimiento y configuración inicial que el round-robin.", "Porque el basado en latencia distribuye el tráfico de forma completamente aleatoria entre los servidores disponibles."], "answer": 1}, // Diapositiva 76 del Tema 4 y concepto general de GSLB (diapositivas 79-80).
+    {"id": 45, "theme": "Tema 4: Balanceo de carga", "question": "Un sistema con balanceo de carga round-robin presenta lentitud intermitente en algunos servidores. ¿Qué causa podría justificar esta situación si el algoritmo se aplica estrictamente?", "options": ["Se está utilizando NAT incorrectamente en lugar de la VIP para las conexiones entrantes.", "Los usuarios están accediendo al sistema únicamente fuera del horario pico de actividad.", "El algoritmo round-robin es inherentemente muy complejo y lento en su diseño, causando la lentitud.", "Los servidores tienen capacidades de procesamiento (cargas de trabajo) o tiempos de respuesta muy dispares, y round-robin no considera esto."], "answer": 3}, // Diapositiva 67 del Tema 4 (supone máquinas con misma potencia).
+    {"id": 46, "theme": "Tema 4: Balanceo de carga", "question": "¿Cuál de las siguientes opciones NO es una implementación posible o un concepto relacionado con el balanceo de carga global (GSLB)?", "options": ["GSLB basado en protocolos de enrutamiento (ej. BGP)", "GSLB basado en DNS", "Conexión directa de todos los centros de datos a un único switch centralizado gigante para todo el tráfico global.", "Redirección HTTP basada en la geolocalización del cliente"], "answer": 2}, // Diapositivas 81 del Tema 4. Todas las otras son implementaciones o conceptos relacionados. La opción c no es una técnica de GSLB.
+    {"id": 47, "theme": "Tema 4: Balanceo de carga", "question": "¿Qué es la Virtual IP (VIP) en el contexto de un balanceador de carga?", "options": ["Una dirección IP privada interna a la que acceden únicamente los administradores del sistema.", "Una dirección IP pública única que los usuarios utilizan para acceder al servicio, y que el balanceador gestiona para distribuir el tráfico a los servidores reales.", "Una técnica para estructurar varios cortafuegos de forma balanceada dentro de la misma subred.", "Un protocolo de red que asigna dinámicamente IPs a los servidores según su carga."], "answer": 1}, // Diapositiva 18 del Tema 4.
+    {"id": 48, "theme": "Tema 4: Balanceo de carga", "question": "¿Qué se consigue principalmente con el balanceo de carga global (GSLB)?", "options": ["Evitar retrasos en las comunicaciones dirigiendo al usuario al centro de datos más adecuado y proporcionar redundancia ante fallos de un centro completo.", "Distribuir la carga únicamente entre varios centros de datos, sin balanceo interno en cada centro.", "Garantizar que todos los servidores del mundo usen la misma versión de software.", "Reducir el coste total del hardware de red al eliminar la necesidad de balanceadores locales."], "answer": 0}, // Diapositivas 79-80 del Tema 4. La opción marcada (c) es incorrecta; la (a) es más completa y correcta.
+    {"id": 49, "theme": "Tema 4: Balanceo de carga", "question": "¿Qué tarea adicional, además de distribuir el tráfico entre varios servidores, realiza un balanceador de carga según el temario?", "options": ["Comprobar la disponibilidad y el estado de los servidores (health checks).", "Derivar el tráfico en función del tipo (ej. HTTP, FTP) o contenido.", "Proteger de diversos tipos de ataques (ej. limitando conexiones).", "Todas las anteriores son correctas."], "answer": 3}, // Diapositivas 6, 24, 60 del Tema 4. La marcada (c) es correcta pero (d) engloba más.
+    {"id": 50, "theme": "Tema 4: Balanceo de carga", "question": "Con el algoritmo de balanceo basado en el menor número de conexiones...", "options": ["Se evita la sobrecarga de las máquinas que podrían tener más trabajo, asumiendo que todas tienen similar capacidad.", "Se consigue una distribución de carga adecuada entre máquinas similares.", "Se tiene en cuenta la sobrecarga histórica de las máquinas finales.", "Todas las anteriores son correctas."], "answer": 3}, // Diapositivas 68-70 del Tema 4. (a) y (b) son correctas, por tanto (d) si "Todas son correctas" se refiere a (a) y (b).
+    {"id": 51, "theme": "Tema 4: Balanceo de carga", "question": "El algoritmo round-robin es un algoritmo de balanceo...", "options": ["Basado en turnos secuenciales.", "Basado en la ponderación asignada a cada servidor.", "Basado en el tiempo de respuesta de cada servidor.", "Basado en la prioridad asignada a grupos de servidores."], "answer": 0}, // Diapositivas 65-67 del Tema 4.
+    {"id": 52, "theme": "Tema 4: Balanceo de carga", "question": "El balanceo de carga, al gestionar conexiones y puertos, se relaciona principalmente con qué capas del modelo OSI?", "options": ["Capa 4 (Transporte) y superiores (hasta Capa 7 - Aplicación)", "Capa 3 (Red) exclusivamente", "Capa 5 (Sesión) y Capa 6 (Presentación) únicamente", "Capa 2 (Enlace de Datos) para la gestión de tramas Ethernet"], "answer": 0}, // Diapositiva 16 del Tema 4. La respuesta (b) "Capa 3" de la captura es incompleta/incorrecta. El balanceo opera principalmente en Capa 4 y puede llegar hasta Capa 7.
+    {"id": 53, "theme": "Tema 4: Balanceo de carga", "question": "El concepto de \"persistencia\" en balanceo de carga hace referencia a:", "options": ["Mantener el tráfico de un mismo usuario dirigido al servidor que comenzó atendiendo su sesión.", "Asegurar que el servicio esté disponible la mayor parte del tiempo posible.", "Mantener a los usuarios en una cola de espera si el servicio no está disponible temporalmente.", "Hacer que el balanceador redirija a todos los usuarios al mismo servidor para simplificar la caché."], "answer": 0}, // Diapositiva 23 del Tema 4.
+    {"id": 54, "theme": "Tema 4: Balanceo de carga", "question": "En el GSLB (Global Server Load Balancing) basado en DNS:", "options": ["Cada dominio tiene una estructura estática y fija de traducción de nombres a IPs sin posibilidad de variación.", "Cada dominio o subdominio tiene una o más zonas de autoridad (authoritative DNS) que publican su información.", "Cada dominio tiene varios servidores DNS, pero solo uno de ellos puede estar activo a la vez.", "No es posible usarlo para balancear entre diferentes centros de datos geográficamente dispersos."], "answer": 1}, // Diapositivas 93-95 del Tema 4.
+    {"id": 55, "theme": "Tema 4: Balanceo de carga", "question": "En un balanceo de carga global (GSLB)...", "options": ["No se realiza un balanceo entre diferentes centros de datos, solo dentro de uno.", "Se puede implementar utilizando DNS o protocolos de enrutamiento como BGP para dirigir el tráfico al centro de datos más adecuado.", "Se balancean todas las peticiones de todos los usuarios del mundo a la vez hacia un único punto global.", "El tráfico desde el navegador del cliente siempre va directamente al centro de datos más eficiente sin intervención del GSLB."], "answer": 1}, // Diapositivas 35, 81, 93, 109 del Tema 4.
+
+
+    // TEMA 5: ASEGURAR LA GRANJA WEB
+    {"id": 56, "theme": "Tema 5: Asegurar la granja web", "question": "¿Cuál de las siguientes prácticas fortalece la seguridad de un servidor frente a vulnerabilidades futuras, según el concepto de 'asegurar un servidor'?", "options": ["Actualizar regularmente el sistema operativo y las aplicaciones.", "Asignar una sola cuenta de administrador global con todos los permisos.", "Configurarlo inicialmente, asegurarse de que está protegido y no modificarlo más para evitar introducir errores.", "Evitar las copias de seguridad automatizadas porque pueden ser interceptadas."], "answer": 0}, // Diapositiva 25 (mantenimiento continuo) y concepto general de seguridad.
+    {"id": 57, "theme": "Tema 5: Asegurar la granja web", "question": "¿Cuál es la ventaja de tener un cortafuegos configurado como dispositivo dedicado, sin otros servicios ejecutándose en él?", "options": ["Aumenta significativamente su capacidad de procesamiento de paquetes.", "Permite instalar más software adicional de seguridad en el mismo dispositivo.", "Reduce el costo de mantenimiento al centralizar todas las funciones de red.", "Disminuye las posibles vulnerabilidades y puntos de ataque al minimizar los servicios expuestos en ese dispositivo crítico."], "answer": 3}, // Diapositiva 34 del Tema 5.
+    {"id": 58, "theme": "Tema 5: Asegurar la granja web", "question": "¿Por qué es necesario establecer reglas explícitas en un cortafuegos y denegar el tráfico por defecto (DENY ALL)?", "options": ["Porque el cortafuegos bloquea automáticamente todas las páginas web consideradas peligrosas por su contenido.", "Porque simplifica la administración de usuarios al no requerir contraseñas para el acceso a la red.", "Porque garantiza que solo el tráfico estrictamente necesario y explícitamente permitido pueda atravesar el cortafuegos.", "Porque evita todos los ataques que se originan desde dentro de la red interna de la organización."], "answer": 2}, // Diapositiva 29 y 33 del Tema 5.
+    {"id": 59, "theme": "Tema 5: Asegurar la granja web", "question": "¿Por qué no basta con tener un único sistema o capa de seguridad en una granja web, según el principio de 'defensa en profundidad'?", "options": ["Porque las actualizaciones automáticas de un único sistema lo hacen inherentemente inestable.", "Porque ningún sistema es totalmente seguro por sí mismo y las capas múltiples se complementan para ofrecer mayor protección.", "Porque los usuarios finales generalmente no entienden cómo funciona un sistema de seguridad complejo.", "Porque un único sistema de seguridad no permite gestionar múltiples conexiones simultáneas de los usuarios."], "answer": 1}, // Diapositivas 8-10 del Tema 5.
+    {"id": 60, "theme": "Tema 5: Asegurar la granja web", "question": "¿Por qué se insiste en eliminar servicios y cuentas innecesarias en un servidor web como parte de su aseguramiento?", "options": ["Porque dichos servicios y cuentas ocupan una cantidad significativa de espacio en el disco duro.", "Porque disminuyen el número de puertos de red disponibles para las aplicaciones legítimas.", "Porque pueden ser vectores de ataque o explotados si no se usan, no se monitorizan o no se actualizan.", "Porque ralentizan la conexión a Internet del servidor al consumir ancho de banda en segundo plano."], "answer": 2}, // Diapositiva 24 y 25 del Tema 5.
+    {"id": 61, "theme": "Tema 5: Asegurar la granja web", "question": "¿Por qué se recomienda no registrar la dirección IP del cortafuegos en servicios DNS públicos?", "options": ["Para evitar que el cortafuegos sea identificado y atacado directamente al conocer su IP.", "Para cumplir con las normativas internacionales de seguridad que prohíben dicha práctica.", "Para permitir el acceso exclusivo al cortafuegos desde redes privadas y VPNs.", "Para ahorrar ancho de banda en la red, ya que las consultas DNS al cortafuegos son muy costosas."], "answer": 0}, // Diapositiva 35 del Tema 5.
+    {"id": 62, "theme": "Tema 5: Asegurar la granja web", "question": "¿Por qué una copia de seguridad debe almacenarse en una ubicación física distinta al servidor original?", "options": ["Principalmente para prevenir la pérdida total de datos en caso de un incidente físico en la ubicación del servidor (incendio, inundación, robo).", "Únicamente para facilitar su restauración más rápida, ya que el acceso a una ubicación externa es más veloz.", "Para reducir los costes de almacenamiento, ya que las ubicaciones externas suelen ser más baratas.", "Para eliminar por completo el uso de discos duros externos y depender solo de la nube."], "answer": 0}, // Diapositiva 59 del Tema 5.
+    {"id": 63, "theme": "Tema 5: Asegurar la granja web", "question": "¿Qué característica de un sistema web es más probable que se vea directamente afectada por un ataque de denegación de servicio (DoS)?", "options": ["La velocidad de cifrado de las comunicaciones SSL/TLS.", "La integridad de los datos almacenados en las bases de datos.", "La complejidad del sistema de autenticación de usuarios.", "La disponibilidad del servicio para los usuarios legítimos."], "answer": 3}, // Diapositiva 46 del Tema 5.
+    {"id": 64, "theme": "Tema 5: Asegurar la granja web", "question": "¿Qué medida de seguridad mejora tanto la confidencialidad (evitando que terceros lean la comunicación) como la integridad (asegurando que la comunicación no sea alterada) en las comunicaciones web?", "options": ["La eliminación sistemática de los registros de actividad del servidor.", "La implementación de puertos específicos encriptados solo para administradores.", "El uso de contraseñas extremadamente complejas para todos los usuarios del sistema.", "El uso de protocolos cifrados como HTTPS (HTTP sobre SSL/TLS)."], "answer": 3}, // Diapositiva 5 (confidencialidad e integridad) y conocimiento general de HTTPS.
+    {"id": 65, "theme": "Tema 5: Asegurar la granja web", "question": "¿Qué propósito cumple la política de 'denegar todo por defecto' en la configuración de un cortafuegos como iptables o ufw?", "options": ["Evitar la conexión a servidores DNS externos para prevenir el envenenamiento de caché DNS.", "Reducir drásticamente el tráfico saliente de la red para ahorrar costes de ancho de banda.", "Permitir solo el tráfico que se configure explícitamente como permitido, bloqueando todo lo demás.", "Impedir automáticamente los ataques de denegación de servicio distribuido (DDoS) sin configuración adicional."], "answer": 2}, // Diapositiva 33 y 37 del Tema 5.
+    {"id": 66, "theme": "Tema 5: Asegurar la granja web", "question": "¿Qué tipo de ataque se basa en aprovechar el mecanismo de negociación de tres vías del protocolo TCP para saturar los recursos de un sistema?", "options": ["Phishing", "TCP SYN Flood", "Smurf", "IP spoofing"], "answer": 1}, // Diapositivas 47-48 del Tema 5.
+    {"id": 67, "theme": "Tema 5: Asegurar la granja web", "question": "Si un atacante consigue pasar una capa de seguridad en una granja web, ¿por qué es importante que existan múltiples capas adicionales (defensa en profundidad)?", "options": ["Para evitar la saturación del tráfico web en la primera capa comprometida.", "Porque reduce significativamente el consumo de energía del sistema al distribuir la carga de seguridad.", "Porque incrementa las posibilidades de detectar y detener el ataque antes de que alcance los datos o sistemas críticos.", "Porque permite que cada capa se especialice en un único tipo de amenaza, ignorando las demás."], "answer": 2}, // Diapositiva 10 del Tema 5.
+    {"id": 68, "theme": "Tema 5: Asegurar la granja web", "question": "Un administrador de red no actualiza regularmente el firmware ni el software de sus cortafuegos. ¿Qué riesgo principal está asumiendo?", "options": ["Exposición a vulnerabilidades de seguridad recientes que podrían ser explotadas por atacantes.", "Imposibilidad progresiva de que los usuarios internos utilicen la red local.", "Pérdida total de la capacidad de acceso remoto para la administración del cortafuegos.", "Un mayor consumo energético del dispositivo cortafuegos debido a software obsoleto."], "answer": 0}, // Diapositivas 11-12 (estar actualizados) y concepto general de seguridad.
+    
+
+    // TEMA 6: MEDIR PRESTACIONES DE LA GRANJA WEB
+    {"id": 69, "theme": "Tema 6: Medir prestaciones", "question": "¿Cuál es una de las principales limitaciones al hacer tests de rendimiento directamente en un entorno de producción?", "options": ["Los usuarios reales del sistema pueden verse afectados negativamente por las pruebas.", "No se puede simular un tráfico que sea lo suficientemente realista para ser útil.", "No se pueden medir las conexiones HTTP, solo las conexiones TCP básicas.", "Los logs del sistema no se generan correctamente durante la ejecución de los tests de rendimiento."], "answer": 0}, // Diapositiva 4 del Tema 6 (Dificultad para hacer pruebas en entorno de producción). La opción (a) es la consecuencia directa.
+    {"id": 70, "theme": "Tema 6: Medir prestaciones", "question": "¿Cuál es una desventaja del uso de Jumbo Frames en redes de calidad media o baja?", "options": ["Aumentan significativamente la fragmentación general de los paquetes en la red.", "Causan interferencias electromagnéticas entre los paquetes de datos.", "El reenvío de paquetes fallidos (que son más grandes) puede implicar una mayor pérdida de datos y tiempo.", "Consumen menos CPU del balanceador de carga, lo cual es un efecto no deseado en estas redes."], "answer": 2}, // Diapositiva 23 del Tema 6.
+    {"id": 71, "theme": "Tema 6: Medir prestaciones", "question": "¿Por qué elegir una MTU (Unidad Máxima de Transmisión) adecuada es importante para el rendimiento de la red?", "options": ["Porque evita fragmentaciones innecesarias de paquetes y reduce el overhead de transmisión.", "Porque bloquea automáticamente los puertos de red que no son necesarios para la comunicación.", "Porque reduce el número máximo de usuarios concurrentes que pueden acceder al sistema.", "Porque impide el uso de conexiones HTTP, forzando el uso de protocolos más eficientes."], "answer": 0}, // Diapositiva 19 del Tema 6.
+    {"id": 72, "theme": "Tema 6: Medir prestaciones", "question": "¿Por qué es importante monitorizar el consumo de CPU y memoria durante los tests de carga en una granja web?", "options": ["Porque son datos que ayudan principalmente a validar las métricas del balanceador de carga.", "Porque ayudan a visualizar los logs de errores generados por las aplicaciones.", "Porque la monitorización de estos recursos permite identificar fallos en la aplicación web de forma automática.", "Porque permiten determinar posibles cuellos de botella en los servidores y si los recursos son suficientes."], "answer": 3}, // Diapositiva 33 y 46 del Tema 6 (estudiar datos de monitorización, consumo de recursos).
+    {"id": 73, "theme": "Tema 6: Medir prestaciones", "question": "¿Por qué no basta con que un sistema web no se caiga (esté disponible) para asegurar un buen rendimiento?", "options": ["Porque pueden existir cuellos de botella e ineficiencias no visibles que degradan la experiencia del usuario (ej. lentitud).", "Porque las páginas web se verán diferentes para cada usuario si el rendimiento no es óptimo.", "Porque para el rendimiento solo importan los errores visibles que interrumpen el servicio.", "Porque un sistema disponible podría estar consumiendo más ancho de banda de la red del estrictamente necesario."], "answer": 0}, // Diapositivas 3-4 del Tema 6 (detectar cuellos de botella e ineficiencias).
+    {"id": 74, "theme": "Tema 6: Medir prestaciones", "question": "¿Qué característica principal hace que HTTP/2 sea más eficiente que HTTP/1.1 en la gestión de múltiples solicitudes?", "options": ["No permite respuestas fragmentadas, enviando todo en un solo bloque.", "Multiplexa múltiples solicitudes y respuestas en una misma conexión TCP, reduciendo la sobrecarga.", "Evita por completo la compresión de cabeceras para acelerar el procesamiento.", "Elimina la necesidad de establecer conexiones TCP, usando UDP por defecto."], "answer": 1}, // Diapositiva 28 del Tema 6.
+    {"id": 75, "theme": "Tema 6: Medir prestaciones", "question": "¿Qué diferencia principal existe entre el tráfico UDP y el TCP en el contexto de las conexiones concurrentes y el estado de la conexión?", "options": ["UDP siempre utiliza más ancho de banda que TCP para la misma cantidad de datos útiles.", "UDP genera más overhead (cabeceras más grandes) por paquete que TCP.", "TCP es menos fiable que UDP para la transferencia de datos críticos.", "UDP es un protocolo 'sin conexión', no mantiene una conexión persistente ni información de estado, a diferencia de TCP."], "answer": 3}, // Diapositiva 14 del Tema 6.
+    {"id": 76, "theme": "Tema 6: Medir prestaciones", "question": "¿Qué herramienta te permitiría analizar en detalle las cabeceras y el contenido de los paquetes que circulan en una red?", "options": ["Wireshark", "Siege", "JMeter", "Apache Benchmark (ab)"], "answer": 0}, // Diapositivas 39-43 del Tema 6.
+    {"id": 77, "theme": "Tema 6: Medir prestaciones", "question": "En una curva característica de rendimiento, ¿qué indica una degradación de la productividad (throughput) a medida que aumenta la carga (peticiones web)?", "options": ["Que el tráfico de la red se ha vuelto más estable y predecible.", "Que el sistema ha alcanzado su punto óptimo de funcionamiento y no puede procesar más.", "Que el número de usuarios concurrentes ha disminuido drásticamente.", "Que el sistema no está procesando adecuadamente la carga, posiblemente debido a un cuello de botella o saturación."], "answer": 3}, // Diapositivas 33-34 del Tema 6.
+    {"id": 78, "theme": "Tema 6: Medir prestaciones", "question": "¿Qué puede indicar un aumento repentino y sostenido en el número de 'conexiones por segundo' que maneja un servidor web?", "options": ["Una mejora significativa en la latencia de la red interna.", "Una reducción general en el tamaño promedio de los paquetes de datos.", "Un pico de tráfico o un aumento en la demanda que podría llegar a saturar el sistema si no está bien dimensionado.", "Un aumento en el uso del protocolo UDP en detrimento de TCP en la red."], "answer": 2}, // Diapositivas 5 y 7 del Tema 6.
+    {"id": 79, "theme": "Tema 6: Medir prestaciones", "question": "¿Qué situación de las siguientes puede producir una caída rápida del rendimiento (throughput) y un aumento de errores en las respuestas de una granja web?", "options": ["La presencia de un volumen normal de peticiones DNS para la resolución de nombres.", "Un tráfico web muy uniforme y predecible a lo largo del tiempo.", "El uso exclusivo de HTTPS en lugar de HTTP para todas las comunicaciones.", "Un fallo en uno de los servicios críticos de la granja web (ej. base de datos, servidor de aplicaciones)."], "answer": 3}, // Diapositiva 35 del Tema 6 (Ejemplo 2: cuando ocurre algún problema).
+    {"id": 80, "theme": "Tema 6: Medir prestaciones", "question": "¿Qué tipo de prueba de rendimiento usarías para conocer la capacidad máxima que un sistema puede manejar antes de que su rendimiento comience a degradarse significativamente (punto de saturación)?", "options": ["Prueba de sobrecarga (Overload test)", "Prueba de humo (Smoke test)", "Prueba de estabilidad (Stability test)", "Prueba de capacidad (Capacity test)"], "answer": 3}, // Diapositiva 44 del Tema 6.
+    {"id": 81, "theme": "Tema 6: Medir prestaciones", "question": "¿Qué ventaja principal tienen los Jumbo Frames en redes de alta capacidad y con transferencias de grandes volúmenes de datos?", "options": ["Aumentan la latencia de forma controlada para mejorar la sincronización.", "Permiten transferir más datos útiles por paquete con menos overhead de procesamiento por parte de la CPU y de la red.", "Requieren menos memoria en los routers para almacenar las tablas de enrutamiento.", "Evitan por completo la fragmentación de datos, independientemente del tamaño del paquete original."], "answer": 1}, // Diapositiva 22 del Tema 6.
+    {"id": 82, "theme": "Tema 6: Medir prestaciones", "question": "Un balanceador de carga con muchas funciones avanzadas activadas (análisis de URLs, soporte de cookies, SSL offloading) puede reducir su rendimiento máximo. ¿Por qué?", "options": ["Porque estas funciones tienden a interrumpir el flujo normal del tráfico entrante.", "Porque cada función adicional consume recursos del sistema del balanceador (CPU, memoria).", "Porque estas funciones suelen bloquear las conexiones seguras (HTTPS) por defecto.", "Porque la mayoría de los balanceadores solo están optimizados para soportar tráfico UDP cuando hay muchas funciones activas."], "answer": 1}, // Diapositiva 36 del Tema 6.
+
+
+    // TEMA 7: ALMACENAMIENTO EN LA GRANJA WEB
+    {"id": 83, "theme": "Tema 7: Almacenamiento", "question": "¿Cuál es el beneficio principal de un almacenamiento distribuido en sistemas web de altas prestaciones?", "options": ["Garantizar alta disponibilidad y escalabilidad horizontal.", "Ofrecer acceso exclusivo mediante el protocolo FTP para mayor seguridad.", "La eliminación completa del tráfico de red entre los nodos de almacenamiento.", "Reducir significativamente el coste de adquisición de los discos SSD."], "answer": 0}, // Diapositivas 19-20 del Tema 7.
+    {"id": 84, "theme": "Tema 7: Almacenamiento", "question": "¿Cuál es el principal inconveniente de utilizar RAID 0 en un sistema de almacenamiento donde los datos son críticos?", "options": ["Requiere necesariamente un número impar de discos para su implementación.", "Aumenta excesivamente el coste por gigabyte almacenado en comparación con otros niveles RAID.", "No proporciona tolerancia a fallos; si falla un solo disco, se pierde toda la información almacenada en el array.", "Reduce considerablemente el rendimiento tanto de lectura como de escritura en comparación con un disco único."], "answer": 2}, // Diapositiva 26 del Tema 7.
+    {"id": 85, "theme": "Tema 7: Almacenamiento", "question": "¿Cuál es el principal riesgo o consecuencia de diseñar mal un sistema de almacenamiento en una arquitectura web de altas prestaciones?", "options": ["Un mayor coste marginal de la factura de electricidad del centro de datos.", "Un incremento en el tráfico de red debido a la ineficiencia del almacenamiento.", "Un menor acceso al sistema por parte de los usuarios que utilizan dispositivos móviles.", "El colapso total de la arquitectura web o una degradación severa del rendimiento y la disponibilidad."], "answer": 3}, // Diapositiva 3 (clave en un sistema de altas prestaciones) y 43 (mala elección puede colapsar).
+    {"id": 86, "theme": "Tema 7: Almacenamiento", "question": "¿Cuál es una ventaja principal de los clústeres de bases de datos?", "options": ["No requieren balanceadores de carga para distribuir las consultas.", "Permiten distribuir la carga de trabajo entre varios nodos y aumentar la tolerancia a fallos.", "Reducen el uso de discos SSD al optimizar el almacenamiento en discos HDD.", "Eliminan la necesidad de cualquier tipo de almacenamiento externo o compartido."], "answer": 1}, // Diapositiva 17 del Tema 7.
+    {"id": 87, "theme": "Tema 7: Almacenamiento", "question": "¿Por qué es crucial diseñar un almacenamiento escalable en una granja web?", "options": ["Principalmente para reducir el uso de CPU en los servidores de aplicaciones.", "Para poder utilizar conexiones de red más rápidas y con menor latencia.", "Para eliminar la necesidad de realizar copias de seguridad periódicas de los datos.", "Para poder atender un aumento en el número de usuarios y en el volumen de datos sin degradar significativamente el rendimiento."], "answer": 3}, // Diapositivas 4, 13, 19 del Tema 7.
+    {"id": 88, "theme": "Tema 7: Almacenamiento", "question": "¿Qué desafío técnico importante presenta el almacenamiento distribuido en comparación con el centralizado?", "options": ["Solo funciona eficientemente con bases de datos de tipo relacional (SQL).", "No permite la replicación de datos entre diferentes nodos del sistema.", "Mayor latencia en algunas operaciones y la dificultad para garantizar la consistencia de los datos entre nodos.", "Requiere el uso de hardware especializado y costoso en cada uno de los nodos distribuidos."], "answer": 2}, // Diapositiva 21 del Tema 7.
+    {"id": 89, "theme": "Tema 7: Almacenamiento", "question": "¿Qué desventaja o desafío puede implicar el uso de almacenamiento en la nube para algunas aplicaciones?", "options": ["Un mayor riesgo intrínseco de fallos de hardware en los discos locales del usuario.", "Una latencia potencialmente superior al acceso a almacenamiento local, especialmente para operaciones intensivas.", "Limitaciones severas en el acceso a servicios FTP para la transferencia de archivos.", "La imposibilidad técnica de replicar datos entre diferentes regiones geográficas ofrecidas por el proveedor."], "answer": 1}, // Diapositiva 38 del Tema 7.
+    {"id": 90, "theme": "Tema 7: Almacenamiento", "question": "¿Qué riesgo o consideración implica la replicación de bases de datos en diferentes servidores para mantener la consistencia?", "options": ["Una reducción automática del tráfico de red hacia la base de datos principal.", "La eliminación completa de la necesidad de realizar copias de seguridad (backups).", "Una posible pérdida inmediata de todos los datos si un servidor replicado falla.", "Una mayor latencia en las operaciones de escritura debido a la necesidad de sincronizar los datos entre réplicas y la complejidad de mantener la consistencia."], "answer": 3}, // Diapositivas 6-7 (integridad, latencia en replicación).
+    {"id": 91, "theme": "Tema 7: Almacenamiento", "question": "¿Qué tecnología de almacenamiento es ideal para compartir archivos de forma sencilla entre múltiples usuarios y servidores a través de la red, presentándose como una 'carpeta compartida'?", "options": ["NAS (Network Attached Storage)", "RAID 10", "SSA (Shared Storage Array)", "SAN (Storage Area Network)"], "answer": 0}, // Diapositivas 35-36 del Tema 7.
+    {"id": 92, "theme": "Tema 7: Almacenamiento", "question": "¿Qué tipo de datos suelen almacenar servicios de almacenamiento de objetos en la nube como Amazon S3 o Azure Blob?", "options": ["Principalmente bloques de datos para sistemas operativos y bases de datos relacionales.", "Archivos grandes como contenido multimedia (vídeos, imágenes), copias de seguridad (backups) y grandes conjuntos de datos (big data).", "Exclusivamente bases de datos de alto rendimiento que requieren baja latencia.", "Únicamente configuraciones de red y metadatos de los servidores virtuales."], "answer": 1}, // Diapositiva 39 del Tema 7.
+    {"id": 93, "theme": "Tema 7: Almacenamiento", "question": "¿Qué ventaja clave ofrece el almacenamiento en la nube en términos de gestión de recursos y costes?", "options": ["Acceso a datos consistentemente más rápido que los discos locales de alto rendimiento.", "Menor latencia general en comparación con una SAN (Storage Area Network) local.", "Mayor dependencia del hardware local, ya que la nube actúa solo como respaldo.", "Costes iniciales potencialmente reducidos (pago por uso) y escalabilidad automática o bajo demanda."], "answer": 3}, // Diapositivas 37-38 del Tema 7.
+    {"id": 94, "theme": "Tema 7: Almacenamiento", "question": "¿Qué ventaja tiene un sistema SAN (Storage Area Network) sobre un NAS (Network Attached Storage) tradicional en entornos que requieren alto rendimiento?", "options": ["Mayor rendimiento y escalabilidad para acceso a nivel de bloque, ideal para bases de datos.", "Un coste de infraestructura y mantenimiento significativamente más bajo.", "Acceso a los datos a nivel de archivo, lo que simplifica la compartición entre usuarios.", "Una mayor facilidad de instalación y configuración inicial para usuarios no técnicos."], "answer": 0}, // Diapositivas 33-34 y 40 (comparativa) del Tema 7.
+   
+];
+
+        // HTML Elements
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const blockEndScreen = document.getElementById('block-end-screen');
+
+        const totalQuestionsCountLabel = document.getElementById('total-questions-count');
+        const questionNumberLabel = document.getElementById('question-number-label');
+        const questionLabel = document.getElementById('question-label');
+        const optionButtons = document.querySelectorAll('.option-button'); // Array of 4 buttons
+        const feedbackMessage = document.getElementById('feedback-message');
+        const nextButton = document.getElementById('next-button');
+        const startButton = document.getElementById('start-button');
+        const resetButton = document.getElementById('reset-button');
+        const resetButtonWelcome = document.getElementById('reset-button-welcome');
+        const resetButtonResults = document.getElementById('reset-button-results');
+        const resetButtonBlockEnd = document.getElementById('reset-button-block-end');
+        const nextBlockButton = document.getElementById('next-block-button');
+        
+        const correctAnswersCountLabel = document.getElementById('correct-answers-count');
+        const incorrectAnswersCountLabel = document.getElementById('incorrect-answers-count');
+        const remainingCountLabel = document.getElementById('remaining-count-label');
+
+        const finalCorrectAnswers = document.getElementById('final-correct-answers');
+        const finalIncorrectAnswers = document.getElementById('final-incorrect-answers');
+        const blockCorrectAnswers = document.getElementById('block-correct-answers');
+        const blockIncorrectAnswers = document.getElementById('block-incorrect-answers');
+        const totalCorrectOnBlockEnd = document.getElementById('total-correct-on-block-end');
+        const totalIncorrectOnBlockEnd = document.getElementById('total-incorrect-on-block-end');
+        const remainingOnBlockEnd = document.getElementById('remaining-on-block-end');
+
+        // Quiz State Variables
+        let remainingQuestions = [];
+        let currentBlockQuestions = [];
+        let currentQuestionIndex = 0;
+        let totalCorrectAnswers = 0;
+        let totalIncorrectAnswers = 0;
+        const BLOCK_SIZE = 30; // Puedes ajustar esto
+        let blockCorrectCount = 0;
+        let blockIncorrectCount = 0;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function resetQuiz() {
+            remainingQuestions = shuffleArray([...allQuizQuestionsData]);
+            currentBlockQuestions = [];
+            currentQuestionIndex = 0;
+            totalCorrectAnswers = 0;
+            totalIncorrectAnswers = 0;
+            blockCorrectCount = 0;
+            blockIncorrectCount = 0;
+
+            updateScoreDisplay();
+            hideAllScreens();
+            welcomeScreen.classList.add('active');
+            totalQuestionsCountLabel.textContent = allQuizQuestionsData.length;
+            feedbackMessage.textContent = '';
+            feedbackMessage.className = ''; // Limpiar clases de feedback
+            optionButtons.forEach(btn => { // Limpiar clases de botones de opción
+                btn.className = 'option-button';
+            });
+             // Mostrar botón de reinicio en bienvenida si ya hay datos guardados
+            if (localStorage.getItem('quizState')) {
+                resetButtonWelcome.style.display = 'inline-block';
+            } else {
+                resetButtonWelcome.style.display = 'none';
+            }
+        }
+
+        function hideAllScreens() {
+            welcomeScreen.classList.remove('active');
+            quizScreen.classList.remove('active');
+            resultsScreen.classList.remove('active');
+            blockEndScreen.classList.remove('active');
+        }
+
+        function startQuiz() {
+            hideAllScreens();
+            quizScreen.classList.add('active');
+            startNewBlock();
+        }
+
+        function startNewBlock() {
+            hideAllScreens();
+            quizScreen.classList.add('active');
+
+            blockCorrectCount = 0;
+            blockIncorrectCount = 0;
+
+            if (remainingQuestions.length === 0) {
+                showFinalResults();
+                return;
+            }
+
+            const numQuestionsForBlock = Math.min(BLOCK_SIZE, remainingQuestions.length);
+            
+            currentBlockQuestions = [];
+            let questionsToMove = [];
+
+            // Tomar preguntas del final del array (que está barajado)
+            for (let i = 0; i < numQuestionsForBlock; i++) {
+                if (remainingQuestions.length > 0) {
+                     questionsToMove.push(remainingQuestions.pop());
+                } else {
+                    break; // No hay más preguntas
+                }
+            }
+            currentBlockQuestions = shuffleArray(questionsToMove); // Barajar las preguntas del bloque actual
+
+            currentQuestionIndex = 0;
+            displayCurrentQuestion();
+        }
+
+        function displayCurrentQuestion() {
+            if (currentQuestionIndex < currentBlockQuestions.length) {
+                const currentQ = currentBlockQuestions[currentQuestionIndex];
+                questionNumberLabel.textContent = `Pregunta ${currentQuestionIndex + 1} de ${currentBlockQuestions.length} (Tema: ${currentQ.theme})`;
+                questionLabel.textContent = currentQ.question;
+
+                optionButtons.forEach((button, index) => {
+                    button.textContent = currentQ.options[index];
+                    button.disabled = false;
+                    button.className = 'option-button'; // Reset classes
+                });
+
+                nextButton.disabled = true;
+                feedbackMessage.textContent = '';
+                feedbackMessage.className = ''; // Reset feedback classes
+                updateScoreDisplay();
+            } else {
+                showBlockResults();
+            }
+        }
+
+        function checkAnswer(selectedIndex) {
+            const currentQ = currentBlockQuestions[currentQuestionIndex];
+            const correctAnswerIndex = currentQ.answer;
+
+            optionButtons.forEach(button => button.disabled = true);
+            nextButton.disabled = false;
+
+            if (selectedIndex === correctAnswerIndex) {
+                feedbackMessage.textContent = '¡Correcto!';
+                feedbackMessage.className = 'correct-feedback';
+                optionButtons[selectedIndex].classList.add('correct-option');
+                totalCorrectAnswers++;
+                blockCorrectCount++;
+            } else {
+                feedbackMessage.textContent = `¡Incorrecto! La respuesta correcta era: "${currentQ.options[correctAnswerIndex]}"`;
+                feedbackMessage.className = 'incorrect-feedback';
+                optionButtons[selectedIndex].classList.add('incorrect-user-choice');
+                optionButtons[correctAnswerIndex].classList.add('correct-option'); // Mostrar la correcta también
+                totalIncorrectAnswers++;
+                blockIncorrectCount++;
+                remainingQuestions.unshift(currentQ); // Add failed question to the beginning of the pool for re-shuffling later
+            }
+            updateScoreDisplay();
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            displayCurrentQuestion();
+        }
+
+        function updateScoreDisplay() {
+            correctAnswersCountLabel.textContent = totalCorrectAnswers;
+            incorrectAnswersCountLabel.textContent = totalIncorrectAnswers;
+            remainingCountLabel.textContent = `Preguntas restantes por responder: ${remainingQuestions.length}`;
+        }
+
+        function showBlockResults() {
+            hideAllScreens();
+            blockEndScreen.classList.add('active');
+            blockCorrectAnswers.textContent = blockCorrectCount;
+            blockIncorrectAnswers.textContent = blockIncorrectCount;
+            totalCorrectOnBlockEnd.textContent = totalCorrectAnswers;
+            totalIncorrectOnBlockEnd.textContent = totalIncorrectAnswers;
+            remainingOnBlockEnd.textContent = remainingQuestions.length;
+
+            if (remainingQuestions.length === 0) {
+                nextBlockButton.style.display = 'none';
+                resetButtonBlockEnd.textContent = 'Ver Resultados Finales';
+                resetButtonBlockEnd.onclick = showFinalResults;
+            } else {
+                nextBlockButton.style.display = 'inline-block';
+                resetButtonBlockEnd.textContent = 'Reiniciar Test';
+                resetButtonBlockEnd.onclick = resetQuiz;
+            }
+        }
+
+        function showFinalResults() {
+            hideAllScreens();
+            resultsScreen.classList.add('active');
+            finalCorrectAnswers.textContent = totalCorrectAnswers;
+            finalIncorrectAnswers.textContent = totalIncorrectAnswers;
+        }
+
+        // Event Listeners
+        startButton.addEventListener('click', startQuiz);
+        resetButton.addEventListener('click', resetQuiz);
+        resetButtonWelcome.addEventListener('click', resetQuiz);
+        resetButtonResults.addEventListener('click', resetQuiz);
+        resetButtonBlockEnd.addEventListener('click', resetQuiz); // El comportamiento se ajusta en showBlockResults
+        nextButton.addEventListener('click', nextQuestion);
+        nextBlockButton.addEventListener('click', startNewBlock);
+
+        optionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                checkAnswer(parseInt(button.dataset.index));
+            });
+        });
+
+        // Initialize quiz
+        document.addEventListener('DOMContentLoaded', resetQuiz);
+    </script>
+</body>
+</html>
